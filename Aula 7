@@ -1,0 +1,125 @@
+library(WDI)
+library(tidyverse)
+library(scales)
+
+# Dados do PIB do Sudão
+dadospibsudao <- WDI(country = 'SDN', indicator = 'NY.GDP.MKTP.CD')
+
+grafpibsudao <- ggplot(dadospibsudao, aes(x = year, y = NY.GDP.MKTP.CD)) +
+  geom_area(fill = "#2E8B57", alpha = 0.6) +              # Área com verde escuro
+  geom_line(color = "#006400", size = 1.3) +              # Linha verde mais escura
+  geom_point(color = "#ADFF2F", size = 3) +               # Pontos em verde limão
+  geom_text(aes(label = round(NY.GDP.MKTP.CD / 1e9, 1)),  # Números em bilhões
+            vjust = -0.7, size = 3.5, color = "#004d00") +
+  scale_y_continuous(labels = label_dollar(scale = 1e-9, suffix = "B", prefix = "$")) +
+  labs(
+    title = "🌍 Evolução do PIB do Sudão (1990 até hoje)",
+    subtitle = "Produto Interno Bruto em dólares correntes (USD)",
+    x = "Ano",
+    y = "PIB (em bilhões de dólares)",
+    caption = "Fonte: Banco Mundial (WDI) | Elaboração própria"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 20, color = "#004d00"),
+    plot.subtitle = element_text(size = 13, color = "#666666"),
+    axis.title = element_text(color = "#003300"),
+    axis.text = element_text(color = "#444444"),
+    plot.caption = element_text(size = 10, color = "#777777")
+  )
+
+print(grafpibsudao)
+
+PROXIMO--------------------------------------------------------------------------------------------
+
+library(WDI)
+library(tidyverse)
+library(scales)
+
+# Lista de países latino-americanos
+paises_latam <- c("AR", "BO", "BR", "CL", "CO", "CR", "CU", "DO", "EC", "SV", 
+                  "GT", "HN", "MX", "NI", "PA", "PY", "PE", "PR", "UY", "VE")
+
+# Baixando dados de PIB para todos os países da lista
+dados_latam <- WDI(country = paises_latam,
+                   indicator = "NY.GDP.MKTP.CD",
+                   start = 2000, end = 2023)
+
+# Renomear colunas pra ficar mais intuitivo
+dados_latam <- dados_latam %>%
+  rename(PIB = NY.GDP.MKTP.CD,
+         pais = country,
+         codigo = iso2c)
+
+# Remover linhas com PIB NA
+dados_latam <- dados_latam %>% filter(!is.na(PIB))
+
+graf_latam <- ggplot(dados_latam, aes(x = year, y = PIB, color = pais)) +
+  geom_line(size = 1.2) +
+  scale_y_continuous(labels = label_dollar(scale = 1e-9, suffix = "B", prefix = "$")) +
+  labs(
+    title = "🎉 PIB da América Latina ao Longo do Tempo (2000–2023)",
+    subtitle = "Cada país com uma cor diferente, porque a vida é uma festa econômica",
+    x = "Ano",
+    y = "PIB (em bilhões de USD)",
+    color = "País",
+    caption = "Fonte: Banco Mundial (WDI)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 20, color = "#222222"),
+    plot.subtitle = element_text(size = 14, color = "#555555"),
+    axis.text = element_text(color = "#333333"),
+    axis.title = element_text(color = "#111111"),
+    plot.caption = element_text(size = 10),
+    legend.position = "right"
+  )
+
+print(graf_latam)
+
+PROXIMO ----------------------------------------------------------
+
+# Instale se ainda não tiver
+install.packages("gganimate")
+install.packages("gifski")
+install.packages("transformr")
+
+library(WDI)
+library(tidyverse)
+library(gganimate)
+library(scales)
+library(gifski)  # para renderizar o GIF
+
+# Ordenar para fazer animação com barras rankeadas
+dados_anim <- dados_latam %>%
+  group_by(year) %>%
+  mutate(rank = rank(-PIB),
+         PIB_label = paste0("$", round(PIB / 1e9, 1), "B")) %>%
+  filter(rank <= 10)  # mostra só o top 10 pra não virar um caos
+
+graf_animado <- ggplot(dados_anim, aes(x = -rank, y = PIB, fill = pais)) +
+  geom_col(width = 0.8, show.legend = FALSE) +
+  coord_flip(clip = "off", expand = FALSE) +
+  geom_text(aes(label = pais), hjust = 1.1, color = "white", size = 5) +
+  geom_text(aes(label = PIB_label), hjust = -0.1, color = "black", size = 4) +
+  scale_y_continuous(labels = label_dollar(scale = 1e-9, suffix = "B")) +
+  labs(
+    title = 'PIB da América Latina - Top 10 Economias • Ano: {closest_state}',
+    subtitle = "Valores em dólares correntes (USD)",
+    x = "", y = "",
+    caption = "Fonte: Banco Mundial (WDI)"
+  ) +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(size = 22, face = "bold"),
+    plot.subtitle = element_text(size = 14),
+    plot.caption = element_text(size = 10),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  transition_states(year, transition_length = 2, state_length = 1, wrap = FALSE) +
+  ease_aes('cubic-in-out')
+
+animate(graf_animado, nframes = 300, fps = 15, width = 900, height = 600, renderer = gifski_renderer("pib_latam.gif"))
