@@ -1,0 +1,134 @@
+---
+title: "Matheus Henrique Gieseler"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(tidyverse)
+library(WDI)
+
+# base de dados
+
+# dados em painel
+dadosdesemprego <- WDI(country = 'all',
+                       indicator = 'SL.UEM.TOTL.ZS')
+
+# corte transversal
+dadosdesemprego2023 <- WDI(country = 'all',
+                            indicator = 'SL.UEM.TOTL.ZS',
+                            start = 2023, end = 2023)
+
+# serie temporal
+dadosdesempregobr <- WDI(country = 'BR',
+                         indicator = 'SL.UEM.TOTL.ZS')
+```
+
+## DESEMPREGO
+
+FALAR SOBRE A VARIAVEL
+
+## GRAFICO CORTE TRANSVERSAL
+
+GRAFICO E TAL
+
+```{r}
+#| label: cortetransversal
+#| warning: false
+#| echo: false
+
+ggplot(dadosdesempregobr, aes(x = year, y = SL.UEM.TOTL.ZS)) + 
+  geom_line(color = "#FF5733", size = 1.5) + # Cor mais vibrante e linha mais grossa
+  geom_point(color = "#FF5733", size = 3, shape = 16) + # Pontos para destacar cada ano
+  labs(title = "Taxa de Desemprego no Brasil (Série Temporal)",
+       subtitle = "Evolução da Taxa de Desemprego ao Longo dos Anos",
+       x = "Ano", 
+       y = "Taxa de Desemprego (%)") +
+  scale_x_continuous(breaks = seq(min(dadosdesempregobr$year), max(dadosdesempregobr$year), by = 2)) + # Marcar intervalos de 2 anos no eixo x
+  theme_minimal(base_size = 15) + # Tema minimalista com tamanho de fonte maior
+  theme(
+    plot.title = element_text(size = 18, face = "bold", color = "#2C3E50", hjust = 0.5), # Título com mais destaque
+    plot.subtitle = element_text(size = 14, color = "#7F8C8D", hjust = 0.5), # Subtítulo em tom mais suave
+    axis.title = element_text(size = 14, face = "bold", color = "#2C3E50"), # Eixos com mais destaque
+    axis.text = element_text(size = 12, color = "#7F8C8D"), # Textos dos eixos
+    panel.grid.major = element_line(color = "#BDC3C7", linetype = "dashed", size = 0.5), # Grade de fundo mais suave
+    panel.grid.minor = element_blank(), # Remover grade menor
+    plot.background = element_rect(fill = "#ECF0F1", color = NA), # Fundo do gráfico mais suave
+    legend.position = "none" # Remover a legenda, já que não é necessária
+  ) +
+  annotate("text", x = 2015, y = max(dadosdesempregobr$SL.UEM.TOTL.ZS) - 1, 
+           label = "Desemprego no Brasil", color = "#FF5733", size = 6, fontface = "italic")
+```
+
+## GRAFICO SERIE TEMPORAL
+
+GRAFICO E TAL
+
+```{r}
+#| label: serietemporal
+#| warning: false
+#| echo: false  
+
+ggplot(dadosdesempregobr, aes(x = year, y = SL.UEM.TOTL.ZS)) +
+  geom_line(color = "#3498DB", size = 2) + # Linha em azul vibrante e mais grossa
+  geom_point(color = "#E74C3C", size = 3, shape = 21, fill = "#E74C3C") + # Pontos vermelhos destacados
+  labs(
+    title = "Taxa de Desemprego no Brasil (Série Temporal)",
+    subtitle = "Análise da evolução da taxa de desemprego ao longo dos anos",
+    x = "Ano",
+    y = "Taxa de Desemprego (%)"
+  ) +
+  scale_x_continuous(breaks = seq(min(dadosdesempregobr$year), max(dadosdesempregobr$year), by = 2)) + # Intervalos de 2 anos no eixo X
+  theme_minimal(base_size = 15) + # Tema minimalista com fontes maiores
+  theme(
+    plot.title = element_text(size = 20, face = "bold", color = "#2C3E50", hjust = 0.5), # Título em negrito e maior
+    plot.subtitle = element_text(size = 14, color = "#95A5A6", hjust = 0.5), # Subtítulo mais suave
+    axis.title = element_text(size = 14, face = "bold", color = "#2C3E50"), # Títulos dos eixos em negrito
+    axis.text = element_text(size = 12, color = "#7F8C8D"), # Textos dos eixos em tom neutro
+    panel.grid.major = element_line(color = "#BDC3C7", linetype = "dashed", size = 0.5), # Grade maior com linha tracejada
+    panel.grid.minor = element_blank(), # Remover grade menor
+    plot.background = element_rect(fill = "#ECF0F1", color = NA), # Fundo suave
+    legend.position = "none" # Remover a legenda
+  ) +
+  annotate("text", x = 2016, y = max(dadosdesempregobr$SL.UEM.TOTL.ZS) - 1, 
+           label = "Análise de Desemprego", color = "#3498DB", size = 6, fontface = "italic") # Anotação personalizada
+```
+
+## GRAFICO DADOS EM PAINEL
+
+GRAFICO E TAL
+
+```{r}
+#| label: dadosempainel 
+#| warning: false 
+#| echo: false  
+
+ggplot(dadosdesemprego, aes(x = year, y = SL.UEM.TOTL.ZS, color = country)) +
+  geom_line(size = 1.2) + # Aumentando a espessura das linhas
+  labs(
+    title = "Taxa de Desemprego - Dados em Painel",
+    subtitle = "Comparação entre países ao longo do tempo",
+    x = "Ano",
+    y = "Taxa de Desemprego (%)"
+  ) +
+  scale_color_brewer(palette = "Set1") + # Paleta de cores mais vibrante
+  scale_x_continuous(breaks = seq(min(dadosdesemprego$year), max(dadosdesemprego$year), by = 2)) + # Intervalos de 2 anos no eixo X
+  theme_minimal(base_size = 15) + # Tema minimalista com fontes maiores
+  theme(
+    plot.title = element_text(size = 20, face = "bold", color = "#2C3E50", hjust = 0.5), # Título maior e negrito
+    plot.subtitle = element_text(size = 14, color = "#95A5A6", hjust = 0.5), # Subtítulo mais suave
+    axis.title = element_text(size = 14, face = "bold", color = "#2C3E50"), # Títulos dos eixos em negrito
+    axis.text = element_text(size = 12, color = "#7F8C8D"), # Textos dos eixos em tom neutro
+    legend.title = element_text(size = 14, face = "bold", color = "#2C3E50"), # Título da legenda em negrito
+    legend.text = element_text(size = 12, color = "#7F8C8D"), # Texto da legenda em tom suave
+    panel.grid.major = element_line(color = "#BDC3C7", linetype = "dashed", size = 0.5), # Grade maior com linha tracejada
+    panel.grid.minor = element_blank(), # Remover grade menor
+    plot.background = element_rect(fill = "#ECF0F1", color = NA), # Fundo suave
+    legend.position = "right" # Posicionar a legenda à direita
+  ) +
+  annotate("text", x = 2015, y = max(dadosdesemprego$SL.UEM.TOTL.ZS) - 1, 
+           label = "Taxa de Desemprego", color = "#E74C3C", size = 6, fontface = "italic") # Anotação personalizada
+```
