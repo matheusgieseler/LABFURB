@@ -1,0 +1,118 @@
+---
+title: "Matheus Henrique Gieseler"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(tidyverse)
+library(WDI)
+library(gganimate)
+library(gifski)
+library(transformr)
+
+# Vetor com países da América Latina
+paises_latam <- c("AR", "BO", "BR", "CL", "CO", "CR", "CU", "DO", "EC",
+                  "GT", "HN", "JM", "MX", "NI", "PA", "PY", "PE", "SV",
+                  "UY", "VE")
+
+# Baixa os dados de área florestal (% da área total) de 1990 a 2022
+florestas_latam <- WDI(country = paises_latam,
+                       indicator = "AG.LND.FRST.ZS",
+                       start = 1990,
+                       end = 2022)
+
+# Define os anos com base no intervalo da base
+ano_inicial <- min(florestas_latam$year, na.rm = TRUE)
+ano_final <- max(florestas_latam$year, na.rm = TRUE)
+
+# Filtra apenas o dado mais recente disponível (2022)
+florestas_latam_2022 <- florestas_latam %>%
+  filter(year == 2022)
+
+# Filtra os dados apenas para o Brasil
+florestas_brasil <- florestas_latam %>%
+  filter(iso2c == "BR")
+
+```
+
+## 🌳 Área Florestal na América Latina
+
+A **variável "Forest area (% of land area)"** do Banco Mundial (**AG.LND.FRST.ZS**) representa a **proporção do território de um país coberta por florestas**, expressa em percentual. Essa variável considera áreas com árvores de pelo menos 5 metros de altura e cobertura de copa superior a 10%, abrangendo florestas naturais e plantadas, mas excluindo terras predominantemente agrícolas ou urbanas com árvores esparsas.
+
+Na **América Latina**, a cobertura florestal é um dos elementos mais importantes do equilíbrio ambiental, considerando a presença de biomas de grande relevância global, como a Floresta Amazônica, o Cerrado e a Mata Atlântica. Países como **Brasil, Peru e Colômbia** concentram as maiores proporções de floresta na região, embora muitos apresentem sinais de queda contínua na cobertura florestal ao longo do tempo.
+
+Os gráficos a seguir mostram a evolução da área florestal nos países latino-americanos entre **1990 e 2022**, revelando tendências de desmatamento, estabilidade ou recuperação ambiental, dependendo da política ambiental adotada e das pressões econômicas em cada território. A análise também destaca o ano mais recente com dados disponíveis e foca na trajetória do Brasil ao longo do tempo.
+
+## 📈 Evolução da Área Florestal na América Latina (1990–2022)
+
+O gráfico abaixo mostra a trajetória da cobertura florestal, em percentual do território, para diversos países da América Latina ao longo do período de **1990 a 2022**. Os dados são extraídos da base do Banco Mundial (indicador **AG.LND.FRST.ZS**) e ajudam a visualizar como cada país tem preservado — ou perdido — suas áreas naturais nas últimas décadas.
+
+Observa-se que alguns países, como **Costa Rica** e **Chile**, apresentaram **estabilidade ou até aumento** na proporção de área florestal, muitas vezes resultado de políticas públicas voltadas à conservação ambiental e reflorestamento. Por outro lado, países como o **Brasil** e a **Bolívia** mostram uma **redução gradual**, refletindo pressões sobre os biomas nativos, como o avanço da agropecuária e o desmatamento ilegal.
+
+Esse tipo de visualização temporal é fundamental para identificar tendências regionais e comparar o desempenho ambiental entre países ao longo do tempo.
+
+```{r}
+#| label: graf_florestas_latam
+#| warning: false
+#| echo: false
+
+ggplot(florestas_latam, aes(x = year, y = AG.LND.FRST.ZS, color = country)) +
+  geom_line(size = 1) +
+  labs(title = "Área florestal (% do território) - América Latina",
+       subtitle = "De 1990 a 2022",
+       x = "Ano",
+       y = "Percentual (%)",
+       color = "País") +
+  scale_x_continuous(limits = c(ano_inicial, ano_final)) +
+  theme_minimal()
+```
+
+## 📊 Área Florestal na América Latina em 2022
+
+Este gráfico apresenta um **retrato comparativo da cobertura florestal entre os países da América Latina no ano de 2022**, o dado mais recente disponível na base do Banco Mundial (indicador **AG.LND.FRST.ZS**).
+
+A leitura permite observar **diferenças significativas** entre os países: nações como **Guiana, Suriname e Panamá** aparecem com os maiores percentuais de área coberta por florestas, enquanto outros países, como **Argentina e Paraguai**, apresentam proporções bem menores. Esse contraste reflete tanto as características naturais de cada território quanto o impacto acumulado das políticas de uso do solo, conservação ambiental e atividades econômicas.
+
+Esse tipo de gráfico de corte transversal é útil para destacar **quem preserva mais**, **quem enfrenta maior degradação** e onde estão os **desafios mais urgentes** em termos de cobertura vegetal na região.
+
+```{r}
+#| label: graf_florestas_latam_2022
+#| warning: false 
+#| echo: false  
+
+ggplot(florestas_latam_2022, aes(x = reorder(country, AG.LND.FRST.ZS), y = AG.LND.FRST.ZS)) +
+  geom_col(fill = "forestgreen") +
+  coord_flip() +
+  labs(title = "Área florestal em 2022 - América Latina",
+       x = "País",
+       y = "Percentual do território (%)") +
+  theme_minimal()
+```
+
+## 📉 Área Florestal no Brasil (1990–2022)
+
+Neste gráfico, observamos a **trajetória da cobertura florestal no Brasil** ao longo de mais de três décadas, de **1990 a 2022**. Segundo os dados do Banco Mundial, o país iniciou a década de 1990 com aproximadamente **59% de seu território coberto por florestas**, valor que **vem diminuindo de forma lenta, porém contínua**, chegando a cerca de **58% em 2022**.
+
+Apesar de parecer uma variação pequena em termos percentuais, essa redução representa uma **perda significativa de áreas naturais**, dado o tamanho do território brasileiro. A trajetória mostra como fatores como **expansão agropecuária, mineração, construção de infraestrutura e desmatamento ilegal** têm impactado negativamente a cobertura vegetal.
+
+Esse gráfico de série temporal permite visualizar **a tendência de queda**, o que reforça a importância de políticas mais eficazes de preservação, monitoramento e uso sustentável das florestas brasileiras.
+
+```{r}
+#| label: graf_florestas_brasil 
+#| echo: false
+#| warning: false
+#| message: false 
+
+ggplot(florestas_brasil, aes(x = year, y = AG.LND.FRST.ZS)) +
+  geom_line(color = "darkgreen", size = 1.2) +
+  geom_point(color = "darkgreen", size = 2) +
+  labs(title = "Área florestal no Brasil (1990–2022)",
+       x = "Ano",
+       y = "Percentual (%)") +
+  scale_x_continuous(limits = c(ano_inicial, ano_final)) +
+  theme_minimal()
+```
