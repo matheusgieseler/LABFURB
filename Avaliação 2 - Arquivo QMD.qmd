@@ -1,0 +1,97 @@
+---
+title: "Matheus Henrique Gieseler"
+format: html
+editor: visual
+---
+
+A variável **SGS 22794** do Banco Central do Brasil representa o **saldo da balança de serviços nas categorias de saúde, educação, cultura, recreação e outros serviços pessoais**, com periodicidade **mensal**, expressa em **milhões de dólares americanos**.
+
+Esse saldo é apurado com base na diferença entre as **receitas** (valores que o Brasil recebe do exterior por prestar esses serviços) e as **despesas** (valores pagos por brasileiros ao consumir esses serviços no exterior). A série faz parte das **Contas Internacionais**, compondo a **balança de serviços**, que por sua vez é um dos componentes do **Balanço de Pagamentos**.
+
+### 🌍 Importância da variável
+
+Essa variável é importante por diversos motivos:
+
+-    **Reflete hábitos de consumo internacional da população brasileira**, especialmente em áreas sensíveis como **educação internacional, turismo de saúde** e **atividades culturais** no exterior.
+
+-    Ajuda a entender a **dependência externa em serviços essenciais**, como quando brasileiros vão ao exterior buscar tratamentos médicos, estudar ou participar de eventos culturais.
+
+-    É um termômetro de **mobilidade internacional e poder aquisitivo**: em períodos de crescimento econômico e câmbio favorável, aumenta o consumo desses serviços fora do país, gerando saldos negativos. Já em crises ou quando o real se desvaloriza, há retração desse tipo de gasto.
+
+-    Pode indicar **desequilíbrios estruturais**: déficits constantes nesse tipo de serviço apontam para falhas na oferta interna de educação de qualidade, infraestrutura de saúde ou indústria do entretenimento, por exemplo.
+
+-    Serve como **indicador auxiliar para políticas públicas**: ao observar a evolução dessa variável, o governo pode avaliar se é necessário investir mais em educação superior, serviços de saúde, ou desenvolver o setor cultural e recreativo para reduzir a evasão de divisas.
+
+```{r}
+#| label: load-packages
+#| include: false
+
+# Carregar bibliotecas
+library(GetBCBData)
+library(tidyverse)
+library(gganimate)
+library(scales)
+library(showtext)
+
+# Fonte bonita do Google
+font_add_google("Bebas Neue", "bebas")
+showtext_auto()
+
+# Baixar dados do BCB - série 22794
+my.id <- c(servicos = 22794)
+
+df.bcb <- gbcbd_get_series(id = my.id,
+                           first.date = '2000-01-01',
+                           last.date = Sys.Date(),
+                           format.data = 'long',
+                           use.memoise = TRUE,
+                           cache.path = tempdir(),
+                           do.parallel = FALSE)
+
+```
+
+```{r}
+#| label: l
+#| warning: false
+#| echo: false
+
+# Gráfico estilizado com correções
+p <- ggplot(df.bcb, aes(x = ref.date, y = value)) +
+  geom_area(stat = "identity", fill = "#CCCCCC", alpha = 0.2) +  # << fix aqui
+  geom_line(stat = "identity", color = "#00CED1", size = 1.4, lineend = "round") +  # << fix aqui
+  geom_point(stat = "identity", color = "white", size = 2, alpha = 0.8) +  # << fix aqui
+  labs(
+    title = 'Serviços: Saúde, Educação e Cultura no Brasil',
+    subtitle = 'Evolução mensal da balança de serviços do Brasil com o exterior',
+    x = '', y = 'Milhões de US$'
+  ) +
+  scale_y_continuous(labels = label_number(suffix = " mi", big.mark = ".", decimal.mark = ",")) +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  theme_minimal(base_family = "bebas", base_size = 18) +
+  theme(
+    plot.background = element_rect(fill = "#1a1a1a", color = NA),
+    panel.background = element_rect(fill = "#1a1a1a", color = NA),
+    plot.title = element_text(color = "white", size = 24, hjust = 0.5),
+    plot.subtitle = element_text(color = "#00CED1", size = 18, hjust = 0.5),
+    axis.title = element_text(color = "white"),
+    axis.text = element_text(color = "#CCCCCC"),
+    panel.grid.major = element_line(color = "#444444"),
+    panel.grid.minor = element_blank()
+  ) +
+  transition_reveal(along = ref.date) +
+  view_follow(fixed_y = TRUE) +
+  ease_aes("cubic-in-out")
+
+
+
+p
+
+
+
+```
+
+Sempre que o gráfico apresenta **valores positivos**, isso indica que o Brasil exportou mais desses serviços do que importou — ou seja, mais estrangeiros vieram ao Brasil para estudar, fazer tratamentos médicos, participar de eventos culturais ou consumir serviços recreativos. Já os **valores negativos** significam que os brasileiros gastaram mais no exterior com essas atividades do que o país recebeu de fora.
+
+Entre **2010 e 2014**, é possível notar um período de saldos positivos ou equilibrados, possivelmente influenciado pela alta do turismo internacional no país, pela valorização do real e pela vinda de estrangeiros ao Brasil por conta de grandes eventos como a Copa do Mundo de 2014. Após esse período, no entanto, os saldos passam a ser **negativos de forma persistente**, refletindo um aumento nos gastos de brasileiros no exterior com saúde e educação, ao mesmo tempo em que a economia interna enfrentava desafios e o país perdia competitividade nesses setores.
+
+A animação mês a mês permite visualizar de forma dinâmica essas transições, dando mais vida aos dados e facilitando a identificação de tendências e momentos de inflexão ao longo do tempo.
